@@ -217,7 +217,6 @@ export const CollectionForm = ({ action }: { action: 'add' | 'edit' }) => {
             config: {
               ...values.config,
               source: 'anybase',
-              // @ts-expect-error error
               anybase: {
                 object_prefix: 'nonono',
                 bucket: anybaseInfo.bucket,
@@ -237,7 +236,6 @@ export const CollectionForm = ({ action }: { action: 'add' | 'edit' }) => {
             config: {
               ...values.config,
               source: 'anybase',
-              // @ts-expect-error error
               anybase: {
                 object_prefix: 'nonono',
                 bucket: anybaseInfo.bucket,
