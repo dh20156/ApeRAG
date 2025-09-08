@@ -188,6 +188,7 @@ async def authenticate_websocket_user(websocket: WebSocket, user_manager: UserMa
     try:
         cookies_header = None
         if hasattr(websocket, "headers"):
+            print(f"websocket headers:{websocket.headers}")
             if hasattr(websocket.headers, "get"):
                 cookie_value = websocket.headers.get("cookie") or websocket.headers.get(b"cookie")
                 if cookie_value:
@@ -267,6 +268,7 @@ async def authenticate_anybase_token(request: Request, session: AsyncSessionDep)
     from sqlalchemy import select
 
     authorization: str = request.headers.get("Authorization")
+    print(f'authorization:{authorization}')
     if not authorization:
         return None
 
@@ -285,11 +287,11 @@ async def authenticate_anybase_token(request: Request, session: AsyncSessionDep)
                 headers={"Authorization": f"Bearer {token}"},
                 timeout=10.0
             )
-            
+            print(f'response:{response}')
             if response.status_code != 200:
                 logger.debug(f"Anybase token verification failed with status {response.status_code}")
                 return None
-                
+            print(f'response data:{response.json()["data"]}')
             anybase_user_data = response.json()['data']
             logger.debug(f"Anybase user data: {anybase_user_data}")
             
@@ -354,7 +356,7 @@ async def authenticate_anybase_token(request: Request, session: AsyncSessionDep)
 
 
 async def optional_user(
-    request: Request, session: AsyncSessionDep, user: User = Depends(fastapi_users.current_user(optional=True))
+    request: Request, response: Response, session: AsyncSessionDep, user: User = Depends(fastapi_users.current_user(optional=True))
 ) -> Optional[User]:
     """Get current user from JWT/Cookie, Anybase token, or API Key and write to request.state.user_id"""
     # First try JWT/Cookie authentication
