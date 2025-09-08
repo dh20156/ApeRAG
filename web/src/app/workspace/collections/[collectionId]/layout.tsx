@@ -21,6 +21,7 @@ export default async function ChatLayout({
         collectionId,
       }),
       serverApi.defaultApi.collectionsCollectionIdSharingGet({
+        // @ts-expect-error error
         collectionId,
       }),
     ]);

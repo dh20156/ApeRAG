@@ -17,10 +17,10 @@ import { toast } from 'sonner';
 const configuration = new Configuration();
 
 function getCookie(cname: string) {
-  const name = cname + "=";
+  const name = cname + '=';
   const decodedCookie = decodeURIComponent(document.cookie);
   const ca = decodedCookie.split(';');
-  for(let i = 0; i <ca.length; i++) {
+  for (let i = 0; i < ca.length; i++) {
     let c = ca[i];
     while (c.charAt(0) == ' ') {
       c = c.substring(1);
@@ -29,7 +29,7 @@ function getCookie(cname: string) {
       return c.substring(name.length, c.length);
     }
   }
-  return "";
+  return '';
 }
 
 const request = axios.create({
@@ -37,13 +37,13 @@ const request = axios.create({
   timeout: 1000 * 5,
 });
 
-request.interceptors.request.use(function(config) {
+request.interceptors.request.use(function (config) {
   const abt = getCookie('abt');
-  if(abt) {
+  if (abt) {
     _.set(config, 'headers.Authorization', `Bearer ${abt}`);
   }
   return config;
-})
+});
 
 request.interceptors.response.use(
   function (response) {

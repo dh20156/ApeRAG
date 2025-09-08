@@ -1,10 +1,7 @@
 'use client';
 import { ChatDetails } from '@/api';
 import { ChatMessages } from '@/components/chat/chat-messages';
-import {
-  PageContainer,
-  PageContent,
-} from '@/components/page-container';
+import { PageContainer, PageContent } from '@/components/page-container';
 import { useBotContext } from '@/components/providers/bot-provider';
 import { Button } from '@/components/ui/button';
 import _ from 'lodash';
@@ -12,7 +9,6 @@ import { Settings } from 'lucide-react';
 import { useTranslations } from 'next-intl';
 import Link from 'next/link';
 import { BotHeader } from '../bot-header';
-
 
 export const ChatDetail = ({ chat }: { chat: ChatDetails }) => {
   const page_chat = useTranslations('page_chat');

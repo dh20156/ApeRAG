@@ -66,7 +66,6 @@ class AnybaseSource(ObjectStorageSource):
             source="object_storage",
             object_storage=object_storage_config,
             # Copy other fields from original config
-            crontab=ctx.crontab,
             enable_knowledge_graph=ctx.enable_knowledge_graph,
             enable_summary=ctx.enable_summary,
             enable_vision=ctx.enable_vision,
