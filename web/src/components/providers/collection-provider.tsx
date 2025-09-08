@@ -44,6 +44,7 @@ export const CollectionProvider = ({
       return;
     }
     const res = await apiClient.defaultApi.collectionsCollectionIdSharingGet({
+      // @ts-expect-error error
       collectionId: collection.id,
     });
     setShare(res.data);

@@ -1211,6 +1211,13 @@ sharing:
     description: Get the sharing status of a collection (owner only)
     security:
       - BearerAuth: []
+    parameters:
+      - name: collection_id
+        in: path
+        required: true
+        schema:
+          type: string
+        description: Collection ID
     responses:
       '200':
         description: Collection sharing status
