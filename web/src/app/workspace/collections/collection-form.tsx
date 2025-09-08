@@ -204,7 +204,9 @@ export const CollectionForm = ({ action }: { action: 'add' | 'edit' }) => {
    */
   const handleCreateOrUpdate = useCallback(
     async (values: FormValueType) => {
-      const anybaseInfo = JSON.parse(localStorage.getItem('anybase_info') || '{}');
+      const anybaseInfo = JSON.parse(
+        localStorage.getItem('anybase_info') || '{}',
+      );
 
       if (action === 'edit') {
         if (!collection?.id) return;
@@ -217,10 +219,10 @@ export const CollectionForm = ({ action }: { action: 'add' | 'edit' }) => {
               source: 'anybase',
               // @ts-expect-error error
               anybase: {
-                object_prefix: "nonono",
+                object_prefix: 'nonono',
                 bucket: anybaseInfo.bucket,
-              }
-            }
+              },
+            },
           },
         });
         if (res.data.id) {
@@ -237,10 +239,10 @@ export const CollectionForm = ({ action }: { action: 'add' | 'edit' }) => {
               source: 'anybase',
               // @ts-expect-error error
               anybase: {
-                object_prefix: "nonono",
+                object_prefix: 'nonono',
                 bucket: anybaseInfo.bucket,
-              }
-            }
+              },
+            },
           },
         });
         if (res.data.id) {

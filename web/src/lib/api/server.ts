@@ -23,18 +23,17 @@ const request = axios.create({
   timeout: 1000 * 5,
 });
 
-request.interceptors.request.use(async function(config) {
-
-  const allCookies = (await cookies());
+request.interceptors.request.use(async function (config) {
+  const allCookies = await cookies();
 
   const abt = allCookies.get('abt');
 
-  if(abt) {
+  if (abt) {
     _.set(config, 'headers.Authorization', `Bearer ${abt.value}`);
   }
 
   return config;
-})
+});
 
 request.interceptors.request.use(
   async (config) => {

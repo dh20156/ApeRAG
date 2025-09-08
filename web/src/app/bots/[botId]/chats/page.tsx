@@ -1,8 +1,5 @@
 import { Chat } from '@/api';
-import {
-  PageContainer,
-  PageContent,
-} from '@/components/page-container';
+import { PageContainer, PageContent } from '@/components/page-container';
 import { getServerApi } from '@/lib/api/server';
 import _ from 'lodash';
 import { getTranslations } from 'next-intl/server';
