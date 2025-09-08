@@ -301,18 +301,19 @@ async def authenticate_anybase_token(request: Request, session: AsyncSessionDep)
 
     # Extract user info from Anybase response
     anybase_user_id = anybase_user_data.get("user_id")
+    anybase_user_code = anybase_user_data.get("user_code")
     anybase_nickname = anybase_user_data.get("nickname")
     anybase_email = anybase_user_data.get("email")
     anybase_phone = anybase_user_data.get("phone")
     anybase_user_role = anybase_user_data.get("role")
     
-    if not anybase_user_id:
+    if not anybase_user_code:
         logger.error("Anybase user data missing user_id")
         return None
 
     # Check if user exists in ApeRAG by anybase user_id (stored as username)
     result = await session.execute(
-        select(User).where(User.username == anybase_user_id, User.is_active.is_(True), User.gmt_deleted.is_(None))
+        select(User).where(User.username == anybase_user_code, User.is_active.is_(True), User.gmt_deleted.is_(None))
     )
     user = result.scalars().first()
     
@@ -327,8 +328,8 @@ async def authenticate_anybase_token(request: Request, session: AsyncSessionDep)
         
         # Create user with Anybase data
         new_user = User(
-            username=anybase_user_id,  # Use anybase user_id as username
-            email=anybase_email or f"{anybase_user_id}@anybase.local",  # Use email or generate one
+            username=anybase_user_code,  # Use anybase user_id as username
+            email=anybase_email or f"{anybase_user_code}@anybase.local",  # Use email or generate one
             hashed_password=user_manager.password_helper.hash(secrets.token_urlsafe(32)),  # Random password
             role=Role.ADMIN if "admin" in anybase_user_role else Role.RO,
             is_active=True,
@@ -340,7 +341,7 @@ async def authenticate_anybase_token(request: Request, session: AsyncSessionDep)
         await session.commit()
         await session.refresh(new_user)
         
-        logger.info(f"Auto-created ApeRAG user for Anybase user {anybase_user_id}")
+        logger.info(f"Auto-created ApeRAG user for Anybase user {anybase_user_code}")
         new_user._auth_method = "anybase_token"
 
         # Note: User resources (quotas, API keys, default bot) are now initialized
@@ -350,7 +351,7 @@ async def authenticate_anybase_token(request: Request, session: AsyncSessionDep)
         return new_user
         
     except Exception as e:
-        logger.error(f"Failed to create user for Anybase user {anybase_user_id}: {e}")
+        logger.error(f"Failed to create user for Anybase user {anybase_user_code}: {e}")
         await session.rollback()
         return None
 
