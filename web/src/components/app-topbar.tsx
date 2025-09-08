@@ -234,6 +234,8 @@ export const AppGithub = () => (
 );
 
 export const AppTopbar = ({ className }: React.ComponentProps<'div'>) => {
+  return;
+  
   return (
     <>
       <header
