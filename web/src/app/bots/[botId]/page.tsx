@@ -1,6 +1,7 @@
 import {
   PageContainer,
   PageContent,
+  PageHeader,
   PageTitle,
 } from '@/components/page-container';
 import { Button } from '@/components/ui/button';
@@ -10,7 +11,6 @@ import { getTranslations } from 'next-intl/server';
 import { notFound } from 'next/navigation';
 import { BotForm } from '../bot-form';
 import { BotDelete } from './bot-delete';
-import { BotHeader } from './chats/bot-header';
 
 export default async function Page({
   params,
@@ -34,7 +34,7 @@ export default async function Page({
 
   return (
     <PageContainer>
-      <BotHeader
+      <PageHeader
         breadcrumbs={[
           { title: page_bot('metadata.title'), href: `/bots` },
           { title: bot?.title || '' },
