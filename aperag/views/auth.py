@@ -188,6 +188,7 @@ async def authenticate_websocket_user(websocket: WebSocket, user_manager: UserMa
     try:
         cookies_header = None
         if hasattr(websocket, "headers"):
+            # print(f"websocket headers:{websocket.headers}")
             if hasattr(websocket.headers, "get"):
                 cookie_value = websocket.headers.get("cookie") or websocket.headers.get(b"cookie")
                 if cookie_value:
@@ -267,6 +268,7 @@ async def authenticate_anybase_token(request: Request, session: AsyncSessionDep)
     from sqlalchemy import select
 
     authorization: str = request.headers.get("Authorization")
+    # print(f'authorization:{authorization}')
     if not authorization:
         return None
 
@@ -285,11 +287,11 @@ async def authenticate_anybase_token(request: Request, session: AsyncSessionDep)
                 headers={"Authorization": f"Bearer {token}"},
                 timeout=10.0
             )
-            
+            # print(f'response:{response}')
             if response.status_code != 200:
                 logger.debug(f"Anybase token verification failed with status {response.status_code}")
                 return None
-                
+            # print(f'response data:{response.json()["data"]}')
             anybase_user_data = response.json()['data']
             logger.debug(f"Anybase user data: {anybase_user_data}")
             
@@ -299,18 +301,19 @@ async def authenticate_anybase_token(request: Request, session: AsyncSessionDep)
 
     # Extract user info from Anybase response
     anybase_user_id = anybase_user_data.get("user_id")
+    anybase_user_code = anybase_user_data.get("user_code")
     anybase_nickname = anybase_user_data.get("nickname")
     anybase_email = anybase_user_data.get("email")
     anybase_phone = anybase_user_data.get("phone")
     anybase_user_role = anybase_user_data.get("role")
     
-    if not anybase_user_id:
+    if not anybase_user_code:
         logger.error("Anybase user data missing user_id")
         return None
 
     # Check if user exists in ApeRAG by anybase user_id (stored as username)
     result = await session.execute(
-        select(User).where(User.username == anybase_user_id, User.is_active.is_(True), User.gmt_deleted.is_(None))
+        select(User).where(User.username == anybase_user_code, User.is_active.is_(True), User.gmt_deleted.is_(None))
     )
     user = result.scalars().first()
     
@@ -325,8 +328,8 @@ async def authenticate_anybase_token(request: Request, session: AsyncSessionDep)
         
         # Create user with Anybase data
         new_user = User(
-            username=anybase_user_id,  # Use anybase user_id as username
-            email=anybase_email or f"{anybase_user_id}@anybase.local",  # Use email or generate one
+            username=anybase_user_code,  # Use anybase user_id as username
+            email=anybase_email or f"{anybase_user_code}@anybase.local",  # Use email or generate one
             hashed_password=user_manager.password_helper.hash(secrets.token_urlsafe(32)),  # Random password
             role=Role.ADMIN if "admin" in anybase_user_role else Role.RO,
             is_active=True,
@@ -338,7 +341,7 @@ async def authenticate_anybase_token(request: Request, session: AsyncSessionDep)
         await session.commit()
         await session.refresh(new_user)
         
-        logger.info(f"Auto-created ApeRAG user for Anybase user {anybase_user_id}")
+        logger.info(f"Auto-created ApeRAG user for Anybase user {anybase_user_code}")
         new_user._auth_method = "anybase_token"
 
         # Note: User resources (quotas, API keys, default bot) are now initialized
@@ -348,13 +351,13 @@ async def authenticate_anybase_token(request: Request, session: AsyncSessionDep)
         return new_user
         
     except Exception as e:
-        logger.error(f"Failed to create user for Anybase user {anybase_user_id}: {e}")
+        logger.error(f"Failed to create user for Anybase user {anybase_user_code}: {e}")
         await session.rollback()
         return None
 
 
 async def optional_user(
-    request: Request, session: AsyncSessionDep, user: User = Depends(fastapi_users.current_user(optional=True))
+    request: Request, response: Response, session: AsyncSessionDep, user: User = Depends(fastapi_users.current_user(optional=True))
 ) -> Optional[User]:
     """Get current user from JWT/Cookie, Anybase token, or API Key and write to request.state.user_id"""
     # First try JWT/Cookie authentication
