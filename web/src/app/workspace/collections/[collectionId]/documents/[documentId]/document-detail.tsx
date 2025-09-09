@@ -61,9 +61,7 @@ export const DocumentDetail = ({
                 <ArrowLeft />
               </Link>
             </Button>
-            <div className={cn('max-w-80 truncate')}>
-              {documentPreview.doc_filename}
-            </div>
+            <div className={cn('max-w-80')}>{documentPreview.doc_filename}</div>
           </div>
 
           <div className="flex flex-row gap-6">
