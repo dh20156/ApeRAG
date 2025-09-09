@@ -70,10 +70,10 @@ export const MessagePartsAi = ({
               />
             </>
           )}
-          <MessageFeedback
+          {/* <MessageFeedback
             parts={parts}
             hanldeMessageFeedback={hanldeMessageFeedback}
-          />
+          /> */}
           <Separator
             orientation="vertical"
             className="data-[orientation=vertical]:h-4"
