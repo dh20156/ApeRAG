@@ -38,9 +38,9 @@ const request = axios.create({
 });
 
 request.interceptors.request.use(function (config) {
-  const abt = getCookie('abt');
-  if (abt) {
-    _.set(config, 'headers.Authorization', `Bearer ${abt}`);
+  const session = getCookie('session');
+  if (session) {
+    _.set(config, 'headers.Authorization', `Bearer ${session}`);
   }
   return config;
 });
