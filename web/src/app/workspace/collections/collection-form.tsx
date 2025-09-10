@@ -351,7 +351,10 @@ export const CollectionForm = ({ action }: { action: 'add' | 'edit' }) => {
     <>
       <Form {...form}>
         <form
-          onSubmit={form.handleSubmit(handleCreateOrUpdate)}
+          onSubmit={(e) => {
+            handleCreateOrUpdate(form.getValues());
+            e.preventDefault();
+          }}
           className="flex flex-col gap-4"
         >
           <Card>
