@@ -193,17 +193,20 @@ export function DocumentsTable({
             <div className="flex flex-row items-center gap-2">
               <div className="h-8 w-6">{icon}</div>
               <div>
-                <div className="max-w-60 truncate">
-                  <Tooltip>
-                    <TooltipTrigger>
-                      {row.original.vector_index_status === 'ACTIVE' ? (
-                        <Link
-                          href={`/workspace/collections/${collection.id}/documents/${row.original.id}`}
-                          className={cn('hover:text-primary')}
-                        >
-                          {row.original.name}
-                        </Link>
-                      ) : (
+                <Tooltip>
+                  <TooltipTrigger>
+                    {row.original.vector_index_status === 'ACTIVE' ? (
+                      <Link
+                        href={`/workspace/collections/${collection.id}/documents/${row.original.id}`}
+                        className={cn(
+                          'hover:text-primary',
+                          'block max-w-60 truncate',
+                        )}
+                      >
+                        {row.original.name}
+                      </Link>
+                    ) : (
+                      <div className='className="max-w-60 truncate"'>
                         <span
                           className={getDocumentStatusColor(
                             row.original.status,
@@ -211,11 +214,12 @@ export function DocumentsTable({
                         >
                           {row.original.name}
                         </span>
-                      )}
-                    </TooltipTrigger>
-                    <TooltipContent>{row.original.name}</TooltipContent>
-                  </Tooltip>
-                </div>
+                      </div>
+                    )}
+                  </TooltipTrigger>
+                  <TooltipContent>{row.original.name}</TooltipContent>
+                </Tooltip>
+
                 <div className="text-muted-foreground text-xs">
                   {(Number(row.original.size || 0) / 1000).toFixed(2)} KB
                 </div>
