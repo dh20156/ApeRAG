@@ -784,10 +784,19 @@ async def delete_user_view(
     return {"message": "User deleted successfully"}
 
 
-async def sync_anybase_departments(session, deps_list: list):
+async def sync_anybase_departments(session, tenants_list: list, deps_list: list):
     """Sync department data from Anybase to ApeRAG database for all tenants"""
     if not deps_list:
         return
+
+    tenants = {}
+    for tenant in tenants_list:
+        tenant_id = tenant.get("id")
+        tenant_name = tenant.get("name")
+        if not tenant_id or not tenant_name:
+            logger.warning(f"Incomplete tenant data: {tenant}")
+            continue
+        tenants[tenant_id] = tenant_name
 
     # Group departments by tenant_id
     departments_by_tenant = {}
@@ -812,6 +821,7 @@ async def sync_anybase_departments(session, deps_list: list):
             "status": DepartmentStatus.ACTIVE,
             "group_path": group_path,
             "tenant_id": tenant_id,
+            "tenant_name": tenants[tenant_id],
             "created_at": utc_now(),
             "updated_at": utc_now(),
         }
@@ -897,33 +907,26 @@ async def get_departments_view(
 
     # If no tenant_id provided, try to get from user context or use a default approach
     if not tenant_id:
-        # For now, get all departments if user is admin, or departments from user's tenant
-        if user.role == Role.ADMIN:
-            # Admin can see all departments
-            result = await session.execute(
-                select(Department).where(Department.status == DepartmentStatus.ACTIVE).order_by(Department.name)
+        # Get departments from user's tenant (both admin and regular users follow tenant restrictions)
+        if hasattr(user, 'department_id') and user.department_id:
+            # Get user's department to find tenant_id
+            dept_result = await session.execute(
+                select(Department).where(Department.id == user.department_id)
             )
-        else:
-            # Regular users can only see departments from their tenant (if they have department_id)
-            if hasattr(user, 'department_id') and user.department_id:
-                # Get user's department to find tenant_id
-                dept_result = await session.execute(
-                    select(Department).where(Department.id == user.department_id)
+            user_dept = dept_result.scalars().first()
+            if user_dept:
+                result = await session.execute(
+                    select(Department).where(
+                        Department.tenant_id == user_dept.tenant_id,
+                        Department.status == DepartmentStatus.ACTIVE
+                    ).order_by(Department.name)
                 )
-                user_dept = dept_result.scalars().first()
-                if user_dept:
-                    result = await session.execute(
-                        select(Department).where(
-                            Department.tenant_id == user_dept.tenant_id,
-                            Department.status == DepartmentStatus.ACTIVE
-                        ).order_by(Department.name)
-                    )
-                else:
-                    # User has no valid department, return empty list
-                    return view_models.DepartmentList(items=[])
             else:
-                # User has no department, return empty list
+                # User has no valid department, return empty list
                 return view_models.DepartmentList(items=[])
+        else:
+            # User has no department, return empty list
+            return view_models.DepartmentList(items=[])
     else:
         # Get departments for specific tenant
         result = await session.execute(
@@ -947,6 +950,7 @@ async def get_departments_view(
                     status=dept.status,
                     group_path=dept.group_path,
                     tenant_id=dept.tenant_id,
+                    tenant_name=dept.tenant_name,
                     created_at=dept.created_at.isoformat(),
                     updated_at=dept.updated_at.isoformat(),
                 )
@@ -966,6 +970,7 @@ async def get_departments_view(
             status=dept.status,
             group_path=dept.group_path,
             tenant_id=dept.tenant_id,
+            tenant_name=dept.tenant_name,
             created_at=dept.created_at.isoformat(),
             updated_at=dept.updated_at.isoformat(),
             children=[]
